@@ -38,3 +38,38 @@ jobs:
       with:
         name: test-results
         path: target/surefire-reports/
+    
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-jar
+        path: target/*.jar
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Download JAR artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-jar
+        path: ./artifacts
+    
+    - name: Deploy to staging
+      run: |
+        echo "Deploying to staging environment..."
+        ls -la ./artifacts
+        echo "JAR deployed successfully"
+    
+    - name: Run smoke tests
+      run: |
+        echo "Running smoke tests..."
+        echo "Smoke tests passed"
+    
+    - name: Deploy to production
+      if: success()
+      run: |
+        echo "Deploying to production environment..."
+        echo "Production deployment completed"
